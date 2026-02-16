@@ -1,0 +1,112 @@
+Exercise 3.1.1 Sequencing data formats
+1. What is the output of a Sanger sequencing run?
+	Output of a Sanger run is a chromatogram with a series of different colored peaks, each color representing a nucleotide. 
+2. How is this output usually presented in the end?
+	AB files can be converted fo fasta, fastq, txt files.
+3. List at least three common sequencing data formats?
+	fasta, fastq, sam/bam, vcf
+
+Exercise 3.1.2 The fastq format
+Have a look at the sequencing files listed in Table 3.1. Those are from Illumina whole genome
+sequencing. You may find them somewhere in the DATA folder in the home root on the server.
+Try to understand the file format by answering the following questions. These Websites may be
+helpful: http://maq.sourceforge.net/fastq.shtml, http://en.wikipedia.org/wiki/FASTQ format.
+1. How to find the files in the DATA folder? Remember the Shell session!
+	find . -name DNA1_1.fq.gz -print
+2. How to best visualize the files not to waste too many resources?
+	zcat <filename> | less
+3. Describe the structure of the file.
+	fastq file format: @<sequence identifier with info about run and cluster>\n <sequence base calls> \n +
+	 <base call quality scores in Phred +33 encoded format, using ascii characters to represent numerical quality scores>
+4. What are the meanings of the different lines?
+	labels, sequences and quality scores are each on different lines, then new reads start.
+5. What are base qualities? How are they represented? Which encoding is used here?
+	Base qualities represent the confidence or probability of that base being correct in a sequencing read. They are represented
+	with ASCII characters in fastq files. Here Phred33 is used.
+6. How to identify read pairs?
+	Paired end reads are in separate files, same name but with either a _1 or _2 at the end.
+
+Exercise 3.1.3 Estimate genome coverage
+The genome size for Capsella rubella is estimated at 250 Mb, the one for Capsella grandiflora
+at 270 Mb.
+1. How long is one sequencing read?
+	120 bp
+	zcat Capsella-sequencing/DNA-seq/rawdata/DNA1_1.fq.gz | awk 'NR==2 {print length($0); exit}'	
+2. How many reads are there for each species?
+	zcat Capsella-sequencing/DNA-seq/rawdata/DNA1_1.fq.gz | grep -c @
+	35683508*2 for forward and backward reads for C. grandiflora (DNA1_1.fq.gz and DNA1_2.fq.gz). 
+	Then another set of reads are in DNA3_1 and DNA3_2 files (36470705*2).
+3. How many bases are there for each species?
+4. Calculate the average genome coverage for both species.
+	(35683508*2+36470705*2)*120/(270*10^6) = 64.14X
+	<number of reads>*<length of each read>/<length of genome>
+5. There is a way to estimate genome coverage using sequencing data without any additional
+information. Which one? Try it out? What difficulties can you get?
+	using the formula for theoretical calculation.
+
+Exercise 3.2.1 Quality control
+Run the FastQC tool, you may download it at the following website,
+https://www.bioinformatics.babraham.ac.uk/projects/fastqc/.
+1. Evaluate the quality of these sequencing runs. Is everything allright?
+	Per base sequence quality and per tile sequence quality is low.
+2. Explore the different analysis modules and discuss possible issues. Read the
+documentation for better understanding.
+	We expect a drop in quality scores on the 3' ends as sequencing proceeds due to fluorophore degrading,
+	and some strands in cluster not being elongated.
+3. Find some other tools to do quality assessments, try out at least one of it. A good
+starting point would be your your favorite search engine, Pubmed or the seqanswers.com
+community (Li et al., 2011).
+	qualimap, seqkit, fastp, prinse
+
+Exercise 3.2.2 Quality trimming
+Download the Trimmomatic tool (Bolger et al., 2014) from the following website,
+http://www.usadellab.org/cms/index.php?page=trimmomatic.
+1. What does Trimmomatic do?
+	It’s a tool for trimming and cropping fastq formatted Illumina data, as well as remove adapter sequences. It improves overall quality of reads.
+2. Choose the appropriate parameters and run the program for all four Capsella datasets.
+3. Find other tools doing quality trimming.
+	seqtk, cutadapt, fastp, sickle, bbduk
+4. Evaluate the quality of the trimmed dataset. What’s different?
+	Per base sequence quality increased while the sequences got shorter. We sacrificed some sequences to improve quality.
+
+Exercise 3.2.3 Fastq file transformations
+Sanger quality encoding is again standard right now.
+1. Identify at least one tool to transform quality encodings.
+	seqtk
+2. Transform all dataset not having Sanger quality encoding.
+3. Extract the first 1000 entries from each fastq file and save in fasta format.
+
+Exercise 3.2.4 Error correction
+Have a look at the following review by Yang et al. (2012) about error-correction methods for
+next-generation sequencing.
+1. What kind of sequencing errors are described there?
+	substitutions, insertions and deletions
+2. What is the general approach taxen to do error-correction?
+	In haplotype sequencing, rare errors can be corrected by overlaying all reads of each position, and errors can be corrected via majority vote.
+3. Identify a more recent review. Are there any conceptual updates?
+In the past decade, machine learning and neural networks have been implemented to wrestle with the issues, along with betterment of sequencing methods.
+4. Identify at least one error-correction tool to be used with our data.
+	bcf, quake 
+5. Do error correction with our data. Get organized with your colleaguse to try out different
+tools on different data sets.
+6. Evaluate the quality of the error corrected datasets
+
+Exercise 3.2.6 Data repositories
+1. How do people usually handle high-throughput sequencing data for long term archival?
+	 data curation, metadata and standardization, public repos, database collaborations
+2. How to access archived data?
+	through the database website like NCBI, GEO using accession numbers
+3. Can you find the Capsella data we used in some public repository? Where?
+	In NCBI https://www.ncbi.nlm.nih.gov/sra/ERX4410817
+	
+Exercise 3.2.7 Data from different technologies
+1. Identify where to get the rawdata for the study presented by Michael et al. (2018).
+	In ENA https://www.ebi.ac.uk/ena/browser/view/PRJEB21270
+2. What sequencing technologies were used here? And for what purpose?
+	Oxford Nanopore MinION sequencing, Illumina sequencing for pilon polishing?, 
+	validate the contiguity and quality of the assembly with two independent single-molecule technologies,
+	 Bionano optical genome maps and Pacific Biosciences Sequel sequencing
+3. Download the data and explore it. What formats do you get?
+	fastq, fast5
+4. What further pre-processing steps can you suggest?
+	Trimming, adapter removal, filtering
