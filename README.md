@@ -1,5 +1,5 @@
-# Analysis_of_high-throughput_sequencing_data
-Several scripts that I have used to analyse high throughput sequencing data on university high performance cluster (HPC)
+# Analysis of high-throughput sequencing data
+Several scripts that I have used to analyse high throughput sequencing data on university high performance cluster (HPC).
 
 There are currently 3 parts:
 - 3 - Data Preprocessing
